@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Paul · UTA Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef;--card:#fff;--card2:#eeecea;--border:#e2ded6;--border2:#c4bfb4;
+  --text:#1c1a17;--muted:#6a6560;
+  --green:#1e6e42;--gbg:#e8f5ee;--gbdr:#a8d8bc;
+  --amber:#a05c00;--abg:#fdf0dc;
+  --blue:#1a52a0;--bbg:#e6eef8;
+  --red:#b83030;--rbg:#fce8e8;
+  --mono:'Courier New',Courier,monospace;--body:'Calibri',sans-serif;--disp:'Bebas Neue',sans-serif;
+  --fs-base:15px;--fs-sm:13px;--fs-xs:12px;--fs-mono:13px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100%;font-size:var(--fs-base);font-weight:700}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+
+/* ── TOPBAR ── */
+.top{background:var(--text);padding:14px 16px 0;position:sticky;top:0;z-index:30}
+.top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.logo{font-family:var(--disp);font-size:22px;letter-spacing:.1em;color:#f6f4ef}
+.logo em{color:#c8f060;font-style:normal}
+.today-lbl{font-family:var(--mono);font-size:var(--fs-xs);color:#9a9890;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:20px}
+.nav{display:flex;overflow-x:auto;scrollbar-width:none;gap:0}
+.nav::-webkit-scrollbar{display:none}
+.nb{flex:0 0 auto;padding:9px 12px 10px;font-family:var(--body);font-size:12px;font-weight:600;color:#6a6860;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s}
+.nb.on{color:#f6f4ef;border-bottom-color:#c8f060}
+
+/* ── PANELS ── */
+.panel{padding:14px 14px 100px;display:none}
+.panel.on{display:block}
+.sh{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+.sh:first-child{margin-top:4px}
+
+/* ── HERO ── */
+.hero{background:var(--text);border-radius:16px;padding:18px 18px 16px;margin-bottom:14px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-30px;bottom:-30px;width:130px;height:130px;border-radius:50%;border:1px solid rgba(200,240,96,.1)}
+.h-eye{font-family:var(--mono);font-size:10px;color:#7a7870;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.h-title{font-family:var(--disp);font-size:28px;letter-spacing:.06em;color:#f6f4ef;line-height:1.1;margin-bottom:6px}
+.h-sub{font-size:12px;color:#9a9890;line-height:1.5;margin-bottom:14px}
+.h-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hs{background:rgba(255,255,255,.07);border-radius:9px;padding:8px;text-align:center}
+.hs-n{font-family:var(--disp);font-size:20px;color:#c8f060;letter-spacing:.04em}
+.hs-l{font-family:var(--mono);font-size:9px;color:#6a6860;margin-top:1px}
+
+/* ── SESSION CARDS ── */
+.scard{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.scard-hdr{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer}
+.sbadge{font-family:var(--disp);font-size:13px;letter-spacing:.06em;padding:4px 10px;border-radius:8px;flex-shrink:0;min-width:56px;text-align:center}
+.b-gym{background:var(--text);color:#c8f060}
+.b-run{background:var(--bbg);color:var(--blue)}
+.b-walk{background:var(--abg);color:var(--amber)}
+.b-golf{background:#f0f8ec;color:#2a6e1a}
+.s-meta{flex:1;min-width:0}
+.s-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.2}
+.s-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.s-last{font-family:var(--mono);font-size:10px;color:var(--green);margin-top:3px}
+.schev{font-size:20px;color:var(--border2);transition:transform .2s;flex-shrink:0}
+.sbody{padding:0 14px 14px;display:none}
+.sbody.on{display:block}
+
+/* ── DATE ROW ── */
+.date-row{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:8px;padding:9px 12px;margin-bottom:12px;border:1px solid var(--border)}
+.date-row label{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
+.date-display{font-family:var(--mono);font-size:13px;color:var(--text);flex:1}
+.date-edit-btn{font-family:var(--mono);font-size:11px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;flex-shrink:0}
+input.date-inp{font-family:var(--mono);font-size:13px;color:var(--text);background:none;border:none;flex:1;outline:none;cursor:pointer}
+
+/* ── EXERCISE BLOCKS ── */
+.exb{background:var(--card2);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border);transition:border-color .2s,background .2s}
+.exb.done{border-color:var(--green);background:var(--gbg)}
+.exb-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.exb-code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted);background:rgba(0,0,0,.07);padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.exb-code.c{background:var(--bbg);color:var(--blue)}
+.exb-name{font-size:16px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
+.done-dot{width:18px;height:18px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700}
+.ss-tag{display:inline-block;font-family:var(--mono);font-size:var(--fs-xs);padding:2px 7px;background:var(--abg);color:var(--amber);border-radius:4px;margin-bottom:6px;letter-spacing:.04em}
+.note{font-family:var(--mono);font-size:var(--fs-sm);color:#4a4540;line-height:1.6;margin-bottom:8px;padding:8px 10px;background:var(--card);border-radius:6px;border-left:3px solid var(--border2);font-weight:600}
+.tgt-bar{font-family:var(--mono);font-size:var(--fs-sm);color:var(--green);background:var(--gbg);border:1px solid var(--gbdr);border-radius:6px;padding:6px 10px;margin-bottom:8px;font-weight:700}
+
+/* ── SET GRID ── */
+.shdr{display:grid;grid-template-columns:30px 1fr 1fr 1fr;gap:5px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-bottom:5px}
+.shdr span{font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center;font-weight:700}
+.shdr span:first-child{text-align:left}
+.srow{display:grid;grid-template-columns:30px 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:6px}
+.slbl{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text);font-weight:700}
+.wulbl{color:#8a7060;background:#f5ece0;padding:1px 5px;border-radius:3px}
+.tgt{font-family:var(--mono);font-size:var(--fs-sm);text-align:center;font-weight:700}
+.tgt.g{color:var(--green)}.tgt.u{color:#8a7060}
+input.inp{padding:9px 4px;font-family:var(--body);font-size:16px;font-weight:700;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text);width:100%;text-align:center;transition:border-color .15s}
+input.inp:focus{outline:none;border-color:var(--text)}
+input.inp.pre{border-color:var(--gbdr);color:var(--green);background:var(--gbg)}
+input.inp.wu{color:#7a5c40;background:#fdf0dc;border-color:#e8c890}
+.tw{display:grid;grid-template-columns:1fr 32px;gap:4px;align-items:center}
+.tick{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:14px;color:var(--border2);display:flex;align-items:center;justify-content:center;font-weight:700;transition:all .15s}
+.tick.on{background:var(--green);border-color:var(--green);color:#fff}
+.add-set{font-family:var(--body);font-size:var(--fs-sm);color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 0 2px;display:block;font-weight:700}
+.ex-done-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--body);font-size:var(--fs-base);font-weight:700;cursor:pointer;margin-top:8px}
+.save-btn{width:100%;padding:14px;background:var(--text);color:var(--bg);border:none;border-radius:10px;font-family:var(--disp);font-size:20px;letter-spacing:.07em;cursor:pointer;margin-top:10px}
+.save-btn:active{opacity:.85}
+
+/* ── CARDIO BLOCK ── */
+.cblk{border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid;transition:all .2s}
+.cblk.run-b{background:var(--bbg);border-color:#c0d4f0}
+.cblk.walk-b{background:var(--abg);border-color:#e0c080}
+.cblk.golf-b{background:#f0f8ec;border-color:#b0d4a0}
+.cblk.wu-b{background:var(--card2);border-color:var(--border)}
+.cblk.done{background:var(--gbg)!important;border-color:var(--gbdr)!important}
+.cblk-name{font-size:14px;font-weight:700;color:var(--text)}
+.c-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.ci-wrap{display:flex;flex-direction:column;gap:3px}
+.ci-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+input.ci{padding:10px 8px;font-family:var(--mono);font-size:15px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);width:100%;text-align:center}
+input.ci:focus{outline:none;border-color:var(--text)}
+.c-calc{font-family:var(--mono);font-size:12px;color:var(--green);text-align:center;padding:4px 0 6px;min-height:22px;font-weight:500}
+.c-done-btn{width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--body);font-size:13px;font-weight:700;cursor:pointer}
+
+/* ── LOG ── */
+.log-ex{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.lex-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer}
+.lex-name{font-size:14px;font-weight:700;color:var(--text)}
+.lex-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.lex-rows{padding:0 14px 12px;display:none}
+.lex-rows.on{display:block}
+.lex-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.lex-row:last-child{border:none}
+.lex-date{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.lex-sess{font-size:11px;color:var(--muted);margin-top:1px}
+.lex-sets{font-family:var(--mono);font-size:12px;color:var(--text);text-align:right;line-height:1.6}
+.lex-pb{font-family:var(--mono);font-size:11px;color:var(--green);font-weight:500}
+
+/* ── CHARTS ── */
+.ccrd{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.ct{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.cs{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px}
+.echips{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+.echips::-webkit-scrollbar{display:none}
+.echip{font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
+.echip.on{background:var(--text);border-color:var(--text);color:#c8f060}
+.vbars{display:flex;align-items:flex-end;gap:3px;height:80px;margin:8px 0 4px}
+.vbar{flex:1;background:var(--text);border-radius:3px 3px 0 0;min-height:3px;opacity:.3}
+.vbar.last{opacity:1}
+.vlbls{display:flex;gap:3px}
+.vlbl{flex:1;font-family:var(--mono);font-size:8px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden}
+.no-data{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:24px 0}
+
+/* ── PBs ── */
+.pb{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:6px}
+.pb-name{font-size:13px;font-weight:700;color:var(--text)}
+.pb-sub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.pb-val{font-family:var(--disp);font-size:24px;letter-spacing:.04em;color:var(--green)}
+.imp-val{font-family:var(--disp);font-size:24px;letter-spacing:.04em;color:var(--blue)}
+
+/* ── CALENDAR ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.cdh{font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;padding-bottom:4px;text-transform:uppercase}
+.cc{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border)}
+.cc.gym{background:var(--text);border-color:var(--text);color:#c8f060;font-weight:700}
+.cc.run{background:var(--bbg);border-color:#c0d4f0;color:var(--blue);font-weight:600}
+.cc.walk{background:var(--abg);border-color:#ddc080;color:var(--amber)}
+.cc.golf{background:#f0f8ec;border-color:#b0d4a0;color:#2a6e1a}
+.cc.today{border:2px solid var(--text);color:var(--text);font-weight:700}
+.cc.empty{background:none;border-color:transparent}
+.cleg{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.cli{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.cld{width:8px;height:8px;border-radius:2px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.sb{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.sbn{font-family:var(--disp);font-size:26px;letter-spacing:.04em;color:var(--text)}
+.sbl{font-size:11px;color:var(--muted);margin-top:2px}
+.sh-item{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:6px}
+.shi-l{font-size:13px;font-weight:600;color:var(--text)}
+.shi-d{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--text);color:#c8f060;padding:10px 22px;border-radius:22px;font-family:var(--mono);font-size:12px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;white-space:nowrap;letter-spacing:.04em}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-row">
+    <div class="logo">PAUL<em>.</em>UTA</div>
+    <div class="today-lbl" id="todayLbl"></div>
+  </div>
+  <div class="nav">
+    <button class="nb on" onclick="nav('prog')">Programme</button>
+    <button class="nb" onclick="nav('log')">Log</button>
+    <button class="nb" onclick="nav('charts')">Charts</button>
+    <button class="nb" onclick="nav('pbs')">PBs</button>
+    <button class="nb" onclick="nav('cal')">Calendar</button>
+    <button class="nb" onclick="exportData()" style="color:#c8f060">Export</button>
+    <button class="nb" onclick="document.getElementById('importFile').click()" style="color:#c8f060">Import</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+</div>
+
+<div class="panel on" id="panel-prog"></div>
+<div class="panel" id="panel-log"></div>
+<div class="panel" id="panel-charts"></div>
+<div class="panel" id="panel-pbs"></div>
+<div class="panel" id="panel-cal"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATE UTILITIES — all display in DD/MM/YYYY, English (UK)
+// ═══════════════════════════════════════════════════════════
+function todayISO(){return new Date().toISOString().slice(0,10);}
+
+// Format ISO date (YYYY-MM-DD) → DD/MM/YYYY for display
+function fmtD(iso){
+  if(!iso||iso==='—')return'—';
+  const p=iso.split('-');
+  if(p.length!==3)return iso;
+  return`${p[2]}/${p[1]}/${p[0]}`;
+}
+
+// Format ISO date → "16 April 2026"
+function fmtDLong(iso){
+  if(!iso)return'—';
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const p=iso.split('-');
+  return`${parseInt(p[2])} ${months[parseInt(p[1])-1]} ${p[0]}`;
+}
+
+// Format ISO date → "Tue 16 Apr"
+function fmtDShort(iso){
+  if(!iso)return'—';
+  const d=new Date(iso+'T12:00:00');
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+
+// Today as DD/MM/YYYY
+function todayDisplay(){return fmtD(todayISO());}
+
+// ═══════════════════════════════════════════════════════════
+// SEED DATA — all historical TrueCoach sessions
+// ═══════════════════════════════════════════════════════════
+const SEED=[
+  {id:'s_20251208',date:'2025-12-08',label:'Session 1 – Lower & Shoulders',type:'gym',exercises:{'Walking Lunge':[{r:'10',w:'7.5',wu:true},{r:'10',w:'10',wu:true},{r:'10',w:'12.5',wu:false},{r:'10',w:'15',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'16',w:'75',wu:false},{r:'16',w:'75',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'13',w:'40',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'15',w:'45',wu:false},{r:'12',w:'50',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'12',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'10',w:'4.5',wu:false}],'Cable Ab Crunch':[{r:'15',w:'45',wu:true},{r:'15',w:'60',wu:false},{r:'15',w:'65',wu:false},{r:'15',w:'70',wu:false}],'Fast Mountain Climbers':[{r:'64',w:'',wu:false},{r:'60',w:'',wu:false},{r:'59',w:'',wu:false}]}},
+  {id:'s_20251210',date:'2025-12-10',label:'Session 2 – Chest & Back',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12.5',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Single Arm Lat Pulldown':[{r:'12',w:'15',wu:false},{r:'12',w:'18',wu:false},{r:'12',w:'21',wu:false},{r:'8',w:'25.5',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'16',w:'',wu:false},{r:'12',w:'',wu:false}],'Seated Bicep Curl':[{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'10',w:'7.5',wu:false}],'Dumbbell Skull Crusher':[{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}]}},
+  {id:'s_20251222',date:'2025-12-22',label:'Session 1 – Lower & Shoulders',type:'gym',exercises:{'Walking Lunge':[{r:'10',w:'7.5',wu:true},{r:'10',w:'10',wu:true},{r:'10',w:'12.5',wu:false},{r:'10',w:'15',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'15',w:'40',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'15',w:'45',wu:false},{r:'10',w:'50',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'10',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'8',w:'4.5',wu:false}],'Cable Ab Crunch':[{r:'15',w:'45',wu:true},{r:'15',w:'60',wu:false},{r:'15',w:'65',wu:false},{r:'12',w:'70',wu:false}],'Fast Mountain Climbers':[{r:'76',w:'',wu:false},{r:'60',w:'',wu:false},{r:'60',w:'',wu:false}]}},
+  {id:'s_20260105_gymA',date:'2026-01-05',label:'Session 1 (Lower and Shoulders)',type:'gym',exercises:{'Walking Lunge':[],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'15',w:'35',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'12',w:'45',wu:false},{r:'10',w:'45',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'10',w:'4.5',wu:false}],'Cable Ab Crunch':[{r:'15',w:'45',wu:true},{r:'15',w:'60',wu:false},{r:'15',w:'65',wu:false},{r:'12',w:'70',wu:false}],'Fast Mountain Climbers':[{r:'70',w:'',wu:false},{r:'60',w:'',wu:false},{r:'50',w:'',wu:false}]}},
+  {id:'s_20260105_walk',date:'2026-01-05',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'40',w:'',wu:false,dist_km:5.5}]}},
+  {id:'s_20260107_gymB',date:'2026-01-07',label:'Session 2 (Chest & Back)',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12.5',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Single Arm Lat Pulldown':[{r:'12',w:'15',wu:false},{r:'12',w:'18',wu:false},{r:'12',w:'21',wu:false}],'Close Grip Tricep Push Up':[{r:'20',w:'',wu:false},{r:'16',w:'',wu:false},{r:'10',w:'',wu:false},{r:'9',w:'',wu:false}],'Seated Bicep Curl':[{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'6',w:'7.5',wu:false}],'Dumbbell Skull Crusher':[{r:'15',w:'5',wu:false},{r:'10',w:'7.5',wu:false},{r:'9',w:'7.5',wu:false}],'Cardio Conditioning Challenge':[]}},
+  {id:'s_20260107_walk',date:'2026-01-07',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'40',w:'',wu:false,dist_km:5.66}]}},
+  {id:'s_20260108_walk',date:'2026-01-08',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'40',w:'',wu:false,dist_km:5.6}]}},
+  {id:'s_20260109_gymC',date:'2026-01-09',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'16',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Single Arm Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:false},{r:'15',w:'12.5',wu:false},{r:'15',w:'12.5',wu:false}],'Seated Cable Row':[{r:'15',w:'30',wu:true},{r:'12',w:'37.5',wu:false},{r:'12',w:'37.5',wu:false},{r:'7',w:'45',wu:false}],'Close Grip Tricep Push Up':[{r:'20',w:'',wu:false},{r:'14',w:'',wu:false},{r:'11',w:'',wu:false}],'Dumbbell Hammer Curl':[{r:'20',w:'5',wu:false},{r:'17',w:'7.5',wu:false},{r:'13',w:'7.5',wu:false}],'Cable Rope Extension':[{r:'20',w:'20',wu:false},{r:'20',w:'25',wu:false},{r:'14',w:'30',wu:false}],'Bike':[]}},
+  {id:'s_20260112_gymA',date:'2026-01-12',label:'Session 1 (Lower and Shoulders)',type:'gym',exercises:{'Walking Lunge':[],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'15',w:'35',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'15',w:'45',wu:false},{r:'12',w:'45',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'15',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'10',w:'4.5',wu:false}],'Cable Ab Crunch':[{r:'15',w:'45',wu:true},{r:'15',w:'60',wu:false},{r:'15',w:'65',wu:false},{r:'15',w:'70',wu:false}],'Fast Mountain Climbers':[{r:'75',w:'',wu:false},{r:'60',w:'',wu:false},{r:'55',w:'',wu:false}]}},
+  {id:'s_20260112_walk',date:'2026-01-12',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'40',w:'',wu:false,dist_km:6.0}]}},
+  {id:'s_20260113_run',date:'2026-01-13',label:'Run',type:'run',exercises:{'Treadmill Run':[{r:'40',w:'',wu:false,dist_km:5.0}]}},
+  {id:'s_20260114_gymB',date:'2026-01-14',label:'Session 2 (Chest & Back)',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12.5',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Single Arm Lat Pulldown':[{r:'12',w:'15',wu:false},{r:'12',w:'18',wu:false},{r:'12',w:'21',wu:false},{r:'8',w:'25.5',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'16',w:'',wu:false},{r:'12',w:'',wu:false},{r:'10',w:'',wu:false}],'Seated Bicep Curl':[{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'10',w:'7.5',wu:false}],'Dumbbell Skull Crusher':[{r:'15',w:'7.5',wu:false},{r:'10',w:'7.5',wu:false},{r:'10',w:'7.5',wu:false}],'Cardio Conditioning Challenge':[]}},
+  {id:'s_20260115_walk',date:'2026-01-15',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'40',w:'',wu:false,dist_km:6.0}]}},
+  {id:'s_20260116_gymC',date:'2026-01-16',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'17',w:'45',wu:false},{r:'15',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Single Arm Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:false},{r:'15',w:'12.5',wu:false},{r:'15',w:'12.5',wu:false}],'Seated Cable Row':[{r:'15',w:'30',wu:true},{r:'15',w:'37.5',wu:false},{r:'15',w:'37.5',wu:false},{r:'11',w:'45',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'14',w:'',wu:false},{r:'12',w:'',wu:false}],'Dumbbell Hammer Curl':[{r:'20',w:'5',wu:false},{r:'17',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}],'Cable Rope Extension':[{r:'20',w:'20',wu:false},{r:'20',w:'25',wu:false},{r:'14',w:'30',wu:false}],'Bike':[]}},
+  {id:'s_20260117_gymB',date:'2026-01-17',label:'Session 2 (Chest & Back)',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12',wu:false},{r:'15',w:'14',wu:false},{r:'15',w:'14',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'14',wu:false},{r:'12',w:'16',wu:false},{r:'12',w:'16',wu:false}],'Single Arm Lat Pulldown':[{r:'12',w:'15',wu:false},{r:'12',w:'18',wu:false},{r:'12',w:'21',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'16',w:'',wu:false},{r:'12',w:'',wu:false},{r:'12',w:'',wu:false}],'Seated Bicep Curl':[{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'8',w:'7.5',wu:false}],'Dumbbell Skull Crusher':[{r:'15',w:'7.5',wu:false},{r:'10',w:'7.5',wu:false},{r:'10',w:'7.5',wu:false}],'Cardio Conditioning Challenge':[]}},
+  {id:'s_20260119_walk',date:'2026-01-19',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'40',w:'',wu:false,dist_km:8.36}]}},
+  {id:'s_20260120_gymA',date:'2026-01-20',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'10',w:'45',wu:false},{r:'12',w:'45',wu:false}],'Seated Hamstring Curl':[{r:'12',w:'41',wu:false},{r:'12',w:'41',wu:false},{r:'12',w:'41',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'15',w:'35',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'14',wu:false},{r:'12',w:'16',wu:false},{r:'12',w:'16',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'12',w:'7.5',wu:false},{r:'13',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false}],'Bike':[]}},
+  {id:'s_20260122_walk',date:'2026-01-22',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'30',w:'',wu:false,dist_km:6.0}]}},
+  {id:'s_20260123_gymC',date:'2026-01-23',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false}],'Seated Hamstring Curl':[{r:'12',w:'41',wu:false},{r:'12',w:'41',wu:false}],'Leg Press':[{r:'12',w:'37',wu:true},{r:'12',w:'52',wu:true},{r:'12',w:'75',wu:false},{r:'12',w:'75',wu:false},{r:'20',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'7',w:'55',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'12',w:'',wu:false},{r:'10',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'15',w:'8',wu:false},{r:'15',w:'8',wu:false},{r:'15',w:'8',wu:false}],'Cable Rope Extension':[{r:'15',w:'20',wu:false},{r:'12',w:'20',wu:false},{r:'9',w:'25',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false}],'Bike':[]}},
+  {id:'s_20260129_walk',date:'2026-01-29',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'30',w:'',wu:false,dist_km:6.0}]}},
+  {id:'s_20260130_gymC',date:'2026-01-30',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'10',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'12',w:'60',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'12',w:'45',wu:false},{r:'10',w:'45',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'15',w:'',wu:false},{r:'10',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'16',w:'7.5',wu:false},{r:'17',w:'7.5',wu:false},{r:'14',w:'7.5',wu:false},{r:'6',w:'10',wu:false}],'Cable Rope Extension':[{r:'20',w:'20',wu:false},{r:'16',w:'25',wu:false},{r:'15',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'20',w:'5',wu:false},{r:'10',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260202_gymA',date:'2026-02-02',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'5',wu:false},{r:'20',w:'5',wu:false},{r:'10',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'10',w:'35',wu:false},{r:'12',w:'35',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'10',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'8',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260203_walk',date:'2026-02-03',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'30',w:'',wu:false,dist_km:6.0}]}},
+  {id:'s_20260204_gymB',date:'2026-02-04',label:'Session 2 Ski Prep / Leg Endurance Focus',type:'gym',exercises:{'Single Leg Extension':[{r:'15',w:'10',wu:false},{r:'15',w:'10',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'20',wu:false}],'Wall Sit':[],'Stairmaster':[],'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12.5',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false}],'Single Arm Dumbbell Row':[]}},
+  {id:'s_20260206_gymC',date:'2026-02-06',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'17',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'16',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'12',w:'45',wu:false},{r:'11',w:'45',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'14',w:'',wu:false},{r:'11',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'16',w:'7.5',wu:false},{r:'17',w:'7.5',wu:false},{r:'8',w:'10',wu:false}],'Cable Rope Extension':[{r:'20',w:'20',wu:false},{r:'16',w:'25',wu:false},{r:'15',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'5',wu:false},{r:'11',w:'7.5',wu:false},{r:'10',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260209_gymA',date:'2026-02-09',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'20',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'20',w:'5',wu:false},{r:'12',w:'7.5',wu:false},{r:'11',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'10',w:'35',wu:false},{r:'12',w:'35',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'10',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'8',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260211_gymB',date:'2026-02-11',label:'Session 2 Ski Prep / Leg Endurance Focus',type:'gym',exercises:{'Single Leg Extension':[{r:'15',w:'10',wu:false},{r:'15',w:'10',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'20',wu:false}],'Wall Sit':[],'Stairmaster':[],'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12.5',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'12',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}]}},
+  {id:'s_20260212_run',date:'2026-02-12',label:'Run',type:'run',exercises:{'Treadmill Run':[{r:'30',w:'',wu:false,dist_km:6.0}]}},
+  {id:'s_20260213_gymC',date:'2026-02-13',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'20',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'20',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'12',w:'45',wu:false},{r:'8',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'22',w:'',wu:false},{r:'14',w:'',wu:false},{r:'12',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'16',w:'7.5',wu:false},{r:'8',w:'10',wu:false}],'Cable Rope Extension':[{r:'20',w:'20',wu:false},{r:'17',w:'25',wu:false},{r:'12',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'5',wu:false},{r:'14',w:'7.5',wu:false},{r:'11',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260216_gymA',date:'2026-02-16',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'20',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'20',w:'45',wu:false},{r:'17',w:'45',wu:false},{r:'20',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'70',wu:false},{r:'12',w:'75',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'20',w:'5',wu:false},{r:'15',w:'7.5',wu:false},{r:'11',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'12',w:'40',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'10',w:'20',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'20',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'11',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'8',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260218_gymB',date:'2026-02-18',label:'Session 2 Ski Prep / Leg Endurance Focus',type:'gym',exercises:{'Single Leg Extension':[{r:'15',w:'10',wu:false},{r:'15',w:'10',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'20',wu:false},{r:'15',w:'20',wu:false}],'Wall Sit':[],'Stairmaster':[],'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'12.5',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'20',wu:false}]}},
+  {id:'s_20260219_walk',date:'2026-02-19',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'30',w:'',wu:false,dist_km:3.97}]}},
+  {id:'s_20260220_gymC',date:'2026-02-20',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'20',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'20',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'40',wu:false},{r:'15',w:'45',wu:false},{r:'9',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'23',w:'',wu:false},{r:'14',w:'',wu:false},{r:'12',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'16',w:'7.5',wu:false},{r:'11',w:'10',wu:false}],'Cable Rope Extension':[{r:'20',w:'25',wu:false},{r:'17',w:'25',wu:false},{r:'12',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'27',w:'5',wu:false},{r:'17',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260223_gymA',date:'2026-02-23',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'20',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'20',w:'45',wu:false},{r:'17',w:'45',wu:false},{r:'20',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'75',wu:false},{r:'14',w:'75',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'12',w:'40',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false},{r:'10',w:'20',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'20',w:'7.5',wu:false},{r:'10',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'89',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260225_gymB',date:'2026-02-25',label:'Session 2 Ski Prep / Leg Endurance Focus',type:'gym',exercises:{'Single Leg Extension':[{r:'15',w:'10',wu:false},{r:'15',w:'10',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'20',wu:false},{r:'13',w:'25',wu:false}],'Wall Sit':[],'Stairmaster':[],'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false},{r:'10',w:'17.5',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'10',w:'20',wu:false}]}},
+  {id:'s_20260226_walk',date:'2026-02-26',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'30',w:'',wu:false}]}},
+  {id:'s_20260227_gymC',date:'2026-02-27',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'15',w:'45',wu:false},{r:'20',w:'50',wu:false},{r:'20',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'15',w:'45',wu:false},{r:'12',w:'45',wu:false},{r:'9',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'23',w:'',wu:false},{r:'14',w:'',wu:false},{r:'12',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'12',w:'10',wu:false},{r:'12',w:'10',wu:false}],'Cable Rope Extension':[{r:'13',w:'30',wu:false},{r:'12',w:'30',wu:false},{r:'12',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260302_gymA',date:'2026-03-02',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'17',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'17',w:'45',wu:false},{r:'17',w:'50',wu:false},{r:'15',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'13',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'14',w:'40',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'20',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'20',w:'7.5',wu:false},{r:'12',w:'9',wu:false},{r:'12',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'9',w:'4.5',wu:false},{r:'8',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260304_gymB',date:'2026-03-04',label:'Session 2 Ski Prep / Leg Endurance Focus',type:'gym',exercises:{'Single Leg Extension':[{r:'15',w:'10',wu:false},{r:'15',w:'10',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'20',wu:false},{r:'13',w:'25',wu:false}],'Wall Sit':[],'Stairmaster':[],'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'15',w:'15',wu:false},{r:'10',w:'17.5',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'10',w:'20',wu:false}]}},
+  {id:'s_20260305_run',date:'2026-03-05',label:'Run',type:'run',exercises:{'Treadmill Run':[{r:'30',w:'',wu:false}]}},
+  {id:'s_20260306_gymC',date:'2026-03-06',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'40',wu:true},{r:'20',w:'50',wu:false},{r:'17',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'10',w:'50',wu:false},{r:'11',w:'50',wu:false},{r:'10',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'25',w:'',wu:false},{r:'16',w:'',wu:false},{r:'13',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'12',w:'10',wu:false},{r:'12',w:'10',wu:false}],'Cable Rope Extension':[{r:'16',w:'30',wu:false},{r:'14',w:'30',wu:false},{r:'10',w:'35',wu:false}],'Dumbbell Lateral Raise':[{r:'17',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'12',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260309_gymA',date:'2026-03-09',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'17',w:'45',wu:false},{r:'17',w:'50',wu:false},{r:'15',w:'50',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'75',wu:false},{r:'14',w:'75',wu:false}],'Dumbbell Lateral Raise':[{r:'15',w:'5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'13',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'12',w:'40',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'10',wu:true},{r:'15',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'20',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'20',w:'7.5',wu:false},{r:'14',w:'9',wu:false},{r:'12',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'15',w:'3',wu:false},{r:'9',w:'4.5',wu:false},{r:'7',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260311_gymB',date:'2026-03-11',label:'Session 2 Ski Prep / Leg Endurance Focus',type:'gym',exercises:{'Single Leg Extension':[{r:'15',w:'10',wu:false},{r:'15',w:'10',wu:false},{r:'15',w:'15',wu:false},{r:'15',w:'20',wu:false},{r:'16',w:'25',wu:false}],'Wall Sit':[],'Stairmaster':[],'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'12.5',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'10',w:'20',wu:false}]}},
+  {id:'s_20260313_gymC',date:'2026-03-13',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'40',wu:true},{r:'20',w:'50',wu:false},{r:'18',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'12',w:'50',wu:false},{r:'11',w:'50',wu:false},{r:'10',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'23',w:'',wu:false},{r:'16',w:'',wu:false},{r:'12',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'12',w:'10',wu:false},{r:'12',w:'10',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false},{r:'16',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'17',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260319_walk',date:'2026-03-19',label:'Treadmill Walk',type:'walk',exercises:{'Treadmill Walk':[{r:'30',w:'',wu:false}]}},
+  {id:'s_20260320_gymC',date:'2026-03-20',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'40',wu:true},{r:'20',w:'50',wu:false},{r:'16',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'12',w:'50',wu:false},{r:'10',w:'50',wu:false},{r:'10',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'24',w:'',wu:false},{r:'15',w:'',wu:false},{r:'13',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'12',w:'10',wu:false},{r:'10',w:'10',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false},{r:'14',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260325_gymB',date:'2026-03-25',label:'Session 2 - upper and golf rotation work',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'12',w:'17.5',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'12.5',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'10',w:'20',wu:false}],'Cable Bicep Curl':[{r:'15',w:'15',wu:true},{r:'15',w:'20',wu:false},{r:'15',w:'20',wu:false},{r:'18',w:'20',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false},{r:'14',w:'30',wu:false}],'Cable Single Arm Chest Press With Rotation':[{r:'12',w:'15',wu:false}],'Cable Woodchop Russian Twist':[{r:'12',w:'15',wu:false}]}},
+  {id:'s_20260327_gymC',date:'2026-03-27',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'40',wu:true},{r:'20',w:'50',wu:false},{r:'16',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'12',w:'50',wu:false},{r:'10',w:'50',wu:false},{r:'10',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'24',w:'',wu:false},{r:'15',w:'',wu:false},{r:'13',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'10',w:'10',wu:false},{r:'12',w:'10',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260330_gymA',date:'2026-03-30',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'17',w:'45',wu:false},{r:'15',w:'50',wu:false},{r:'15',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'12',w:'40',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'12.5',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'10',w:'20',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'15',w:'9',wu:false},{r:'15',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'11',w:'4.5',wu:false},{r:'10',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260401_gymB',date:'2026-04-01',label:'Session 2 - upper and golf rotation work',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'8',w:'17.5',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'12.5',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'10',w:'20',wu:false}],'Cable Bicep Curl':[{r:'15',w:'15',wu:true},{r:'15',w:'20',wu:false},{r:'15',w:'20',wu:false},{r:'14',w:'25',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false},{r:'14',w:'30',wu:false}],'Cable Single Arm Chest Press With Rotation':[{r:'12',w:'9',wu:false}],'Cable Woodchop Russian Twist':[{r:'12',w:'9',wu:false}]}},
+  {id:'s_20260402_run',date:'2026-04-02',label:'Run',type:'run',exercises:{'Treadmill Run':[{r:'30',w:'',wu:false}]}},
+  {id:'s_20260403_gymC',date:'2026-04-03',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'40',wu:true},{r:'17',w:'55',wu:false},{r:'17',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'7',w:'50',wu:false},{r:'9',w:'45',wu:false},{r:'8',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'25',w:'',wu:false},{r:'15',w:'',wu:false},{r:'15',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'12',w:'10',wu:false},{r:'12',w:'10',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Bike':[]}},
+  {id:'s_20260406_gymA',date:'2026-04-06',label:'Session 1',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'35',wu:true},{r:'20',w:'45',wu:false},{r:'15',w:'45',wu:false},{r:'15',w:'50',wu:false},{r:'15',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'70',wu:false},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Dumbbell Lateral Raise':[{r:'12',w:'5',wu:true},{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Chest Press Machine':[{r:'15',w:'20',wu:true},{r:'15',w:'25',wu:true},{r:'15',w:'35',wu:false},{r:'12',w:'40',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'12.5',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'12',w:'20',wu:false}],'Cable Chest Fly':[{r:'15',w:'2.5',wu:true},{r:'15',w:'7.5',wu:false},{r:'12',w:'9',wu:false},{r:'15',w:'9',wu:false}],'Cable Rear Delt Fly':[{r:'15',w:'3',wu:false},{r:'12',w:'4.5',wu:false},{r:'10',w:'4.5',wu:false}],'Bike':[]}},
+  {id:'s_20260408_gymB',date:'2026-04-08',label:'Session 2 - upper and golf rotation work',type:'gym',exercises:{'Incline Dumbbell Chest Press':[{r:'15',w:'7.5',wu:true},{r:'15',w:'10',wu:true},{r:'15',w:'15',wu:false},{r:'12',w:'17.5',wu:false},{r:'10',w:'17.5',wu:false}],'Single Arm Dumbbell Row':[{r:'12',w:'12.5',wu:true},{r:'15',w:'17.5',wu:false},{r:'15',w:'17.5',wu:false},{r:'12',w:'20',wu:false}],'Cable Bicep Curl':[{r:'15',w:'15',wu:true},{r:'15',w:'20',wu:false},{r:'15',w:'20',wu:false},{r:'15',w:'25',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'15',w:'30',wu:false},{r:'10',w:'35',wu:false}],'Cable Single Arm Chest Press With Rotation':[{r:'12',w:'9',wu:false}],'Cable Woodchop Russian Twist':[{r:'12',w:'9',wu:false}]}},
+  {id:'s_20260410_gymC',date:'2026-04-10',label:'Session 3 - Full Body',type:'gym',exercises:{'Leg Extensions':[{r:'15',w:'40',wu:true},{r:'20',w:'50',wu:false},{r:'16',w:'55',wu:false}],'Seated Hamstring Curl':[{r:'15',w:'50',wu:true},{r:'15',w:'75',wu:false},{r:'15',w:'75',wu:false}],'Leg Press':[{r:'15',w:'52',wu:true},{r:'15',w:'60',wu:true},{r:'15',w:'67.5',wu:false},{r:'15',w:'67.5',wu:false},{r:'15',w:'75',wu:false}],'Wide Grip Lat Pull Down':[{r:'15',w:'35',wu:true},{r:'7',w:'50',wu:false},{r:'10',w:'45',wu:false},{r:'8',w:'50',wu:false}],'Close Grip Tricep Push Up':[{r:'20',w:'',wu:false},{r:'15',w:'',wu:false},{r:'12',w:'',wu:false}],'Dumbbell Bicep Curl':[{r:'20',w:'7.5',wu:false},{r:'10',w:'10',wu:false},{r:'12',w:'10',wu:false}],'Cable Rope Extension':[{r:'15',w:'30',wu:false},{r:'12',w:'30',wu:false},{r:'15',w:'30',wu:false}],'Dumbbell Lateral Raise':[{r:'20',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false},{r:'15',w:'7.5',wu:false}],'Bike':[]}},
+];
+
+// ═══════════════════════════════════════════════════════════
+// PROGRAMME — 3 gym sessions + cardio, non-day-specific
+// ═══════════════════════════════════════════════════════════
+const PROG=[
+  {
+    id:'gymA',type:'gym',badge:'GYM A',
+    name:'Power & Posterior Chain',
+    sub:'Hamstrings · glutes · back width · rear delts · core',
+    exercises:[
+      {code:'WU',name:'Mobility Warm-Up',cardio:true,ck:'wu',
+       note:'Hip 90/90 stretch × 60 sec each side\nThoracic rotations × 10 each side\nLeg swings × 15 each leg · Arm circles × 20\nDo not skip — protects your golf swing'},
+      {code:'A',name:'Seated Hamstring Curl',cardio:false,ss:null,
+       note:'1 warm-up set · 3 working sets × 12–15 reps\n3-second lowering phase — slow eccentric builds more muscle'},
+      {code:'B',name:'Leg Press',cardio:false,ss:null,
+       note:'2 warm-up sets · 3 working sets × 15–20 reps\nRest 60 seconds only · Feet high and wide = more glutes and hamstrings'},
+      {code:'C1',name:'Wide Grip Lat Pull Down',cardio:false,ss:'C1+C2',
+       note:'SUPERSET → C2 · 1 warm-up + 3 sets × 10–12 reps\nFull stretch at top · Back width creates the V-taper'},
+      {code:'C2',name:'Cable Rear Delt Fly',cardio:false,ss:'C1+C2',
+       note:'SUPERSET after lat pulldown · 3 sets × 15 reps\nRear delts = shoulder width + golf backswing range'},
+      {code:'D',name:'Single Arm Dumbbell Row',cardio:false,ss:null,
+       note:'1 warm-up set each side · 3 sets × 10–15 reps each side\nElbow to ceiling · Full range of motion'},
+      {code:'E1',name:'Cable Ab Crunch',cardio:false,ss:'E1+E2',
+       note:'SUPERSET → E2 · 1 warm-up + 3 sets × 15–20 reps\nKneel facing cable, crunch elbows to knees'},
+      {code:'E2',name:'Hanging Knee Raise',cardio:false,ss:'E1+E2',bw:true,
+       note:'SUPERSET after cable crunch · 3 sets × 15–20 reps\nTuck knees to chest — lower abs, the ones that show below the navel'},
+      {code:'F',name:'Bike',cardio:true,ck:'bike',
+       note:'10–12 minutes moderate resistance · Cooldown pace'}
+    ]
+  },
+  {
+    id:'gymB',type:'gym',badge:'GYM B',
+    name:'Push & Core Stability',
+    sub:'Upper chest · shoulders · triceps · golf rotation · abs',
+    exercises:[
+      {code:'WU',name:'Mobility Warm-Up',cardio:true,ck:'wu',
+       note:'Shoulder circles × 20\nArm-across-chest stretch × 30 sec each side\nLunge with thoracic rotation × 8 each side'},
+      {code:'A1',name:'Incline Dumbbell Chest Press',cardio:false,ss:'A1+A2',
+       note:'SUPERSET → A2 · 2 warm-up sets + 4 working sets × 10–12 reps\nStay 1 rep short of failure · INCLINE = upper chest shelf = the look you want'},
+      {code:'A2',name:'Cable Rear Delt Fly',cardio:false,ss:'A1+A2',
+       note:'SUPERSET after incline press · 3 sets × 15 reps\nBalances all the chest work — keeps rotator cuff healthy for golf'},
+      {code:'B1',name:'Dumbbell Lateral Raise',cardio:false,ss:'B1+B2',
+       note:'SUPERSET → B2 · 1 warm-up + 3 sets × 12–15 reps\nYour delts are already well developed — maintain and sharpen'},
+      {code:'B2',name:'Cable Chest Fly',cardio:false,ss:'B1+B2',
+       note:'SUPERSET after lateral raise · 1 warm-up + 3 sets × 12–15 reps\nFull stretch at the bottom, hard squeeze at the top'},
+      {code:'C1',name:'Close Grip Tricep Push Up',cardio:false,ss:'C1+C2',bw:true,
+       note:'SUPERSET → C2 · 3 sets × max reps to failure\nTriceps = two-thirds of arm size — these make arms look defined'},
+      {code:'C2',name:'Cable Rope Extension',cardio:false,ss:'C1+C2',
+       note:'SUPERSET after push-ups · 1 warm-up + 3 sets × 12–15 reps\nElbows pinned to sides · Full extension'},
+      {code:'D1',name:'Cable Single Arm Chest Press With Rotation',cardio:false,ss:'D1+D2',
+       note:'SUPERSET → D2 · 2 sets each arm × 12 reps\nThis is your golf swing — train it deliberately · Drive from the core'},
+      {code:'D2',name:'Cable Woodchop Russian Twist',cardio:false,ss:'D1+D2',
+       note:'SUPERSET after rotation press · 2 sets each side × 12 reps\nHips lead, arms follow — golf rotation power'},
+      {code:'E1',name:'Cable Ab Crunch',cardio:false,ss:'E1+E2',
+       note:'SUPERSET → E2 · 1 warm-up + 3 sets × 15 reps'},
+      {code:'E2',name:'Fast Mountain Climbers',cardio:false,ss:'E1+E2',bw:true,
+       note:'SUPERSET after cable crunch · 3 sets × 30 seconds max pace\nRest 45 seconds · Cardio finisher baked in'}
+    ]
+  },
+  {
+    id:'gymC',type:'gym',badge:'GYM C',
+    name:'Full Body Athletic',
+    sub:'Volume · definition · arms · legs · triset finisher',
+    exercises:[
+      {code:'WU',name:'Elliptical Warm-Up',cardio:true,ck:'bike',
+       note:'4 minutes · Start level 3, increase by 1 every 30 seconds\nGets heart rate up before the main work'},
+      {code:'A',name:'Leg Extensions',cardio:false,ss:null,defaultSets:5,
+       note:'1 warm-up set + 4 working sets × 15–20 reps\nRest 40 seconds only · The burn IS the point\nHigh volume = definition, not bulk'},
+      {code:'B1',name:'Incline Dumbbell Chest Press',cardio:false,ss:'B1+B2',
+       note:'SUPERSET → B2 · 2 warm-up + 3 sets × 12 reps\nSecond upper chest session this week — this is the priority exercise'},
+      {code:'B2',name:'Single Arm Lat Pulldown',cardio:false,ss:'B1+B2',
+       note:'SUPERSET after incline press · 3 sets each side × 12 reps\nMore range than the bar — keep elbow tracking back and down'},
+      {code:'C1',name:'Dumbbell Bicep Curl',cardio:false,ss:'C1+C2',
+       note:'SUPERSET → C2 · 3 sets × 12–16 reps\nSlow curl up, slow lower · Full extension at the bottom'},
+      {code:'C2',name:'Seated Bicep Curl 60 Bench',cardio:false,ss:'C1+C2',
+       note:'SUPERSET · drop weight slightly · 3 sets × 12 reps\nStretches the long head — gives the bicep its peak'},
+      {code:'D1',name:'Dumbbell Skull Crusher',cardio:false,ss:'D1+D2',
+       note:'SUPERSET → D2 · 3 sets × 12–15 reps · Elbows stay fixed\nLower to forehead, press to full extension'},
+      {code:'D2',name:'Dumbbell Lateral Raise',cardio:false,ss:'D1+D2',
+       note:'SUPERSET after skull crusher · 3 sets × 12–15 reps\nMaintain that shoulder width'},
+      {code:'E1',name:'Cable Ab Crunch',cardio:false,ss:'E1+E2+E3',
+       note:'TRISET → E2 → E3 · 1 warm-up + 3 sets × 15 reps'},
+      {code:'E2',name:'Hanging Knee Raise',cardio:false,ss:'E1+E2+E3',bw:true,
+       note:'TRISET · 3 sets × 15–20 reps · Lower abs'},
+      {code:'E3',name:'Close Grip Tricep Push Up',cardio:false,ss:'E1+E2+E3',bw:true,
+       note:'TRISET finisher · 3 sets × max reps to failure\nRest 60 seconds then repeat from E1'},
+      {code:'F',name:'Bike',cardio:true,ck:'bike',
+       note:'15 minutes steady moderate resistance · Fat-burning zone'}
+    ]
+  },
+  {
+    id:'run5k',type:'run',badge:'5K RUN',
+    name:'5km Run',
+    sub:'Steady state · approx. 37 mins at 8 km/h',
+    exercises:[
+      {code:'A',name:'Warm-Up Walk',cardio:true,ck:'walk',note:'5 minutes · 5.5–6 km/h · Let the legs loosen up'},
+      {code:'B',name:'5km Run',cardio:true,ck:'run',
+       note:'Target: 8 km/h · approx. 37 minutes\nFocus on breathing rhythm · Consistency here is what keeps you lean year-round'},
+      {code:'C',name:'Cool-Down Walk',cardio:true,ck:'walk',note:'5 minutes · 5.5 km/h · Bring the heart rate down gradually'},
+      {code:'D',name:'Post-Run Stretch',cardio:true,ck:'wu',
+       note:'Hip flexors · Quads · Calves · Hamstrings · 30 seconds each\nNon-negotiable for golf flexibility'}
+    ]
+  },
+  {
+    id:'run10k',type:'run',badge:'10K RUN',
+    name:'10km Run',
+    sub:'Long run · aerobic base · fat burning · approx. 75 mins',
+    exercises:[
+      {code:'A',name:'Warm-Up Walk',cardio:true,ck:'walk',note:'5 minutes · 6 km/h'},
+      {code:'B',name:'10km Run',cardio:true,ck:'run',
+       note:'Target: 8 km/h · approx. 75 minutes\nYour biggest single fat-burning session — protect this one\nDo not skip for two weeks in a row'},
+      {code:'C',name:'Cool-Down Walk',cardio:true,ck:'walk',note:'5–10 minutes · 5 km/h'},
+      {code:'D',name:'Full Body Stretch',cardio:true,ck:'wu',
+       note:'20 minutes · Hip flexors · Thoracic spine · Shoulders · Hamstrings\nCritical after 10km — this is injury prevention, not optional'}
+    ]
+  },
+  {
+    id:'walkrun',type:'walk',badge:'WALK / RUN',
+    name:'Walk & Run Session',
+    sub:'Any combination of walking and running — log both',
+    exercises:[
+      {code:'A',name:'Treadmill Walk',cardio:true,ck:'walk',
+       note:'Any duration · 6–6.5 km/h · Moderate incline\nLog duration and distance'},
+      {code:'B',name:'Treadmill Run',cardio:true,ck:'run',
+       note:'Any duration · Target 8 km/h\nLog duration and distance — watch your pace improve over time'}
+    ]
+  },
+  {
+    id:'golf',type:'golf',badge:'GOLF',
+    name:'Golf Round',
+    sub:'9 or 18 holes · buggy · Apple Watch tracking',
+    exercises:[
+      {code:'A',name:'Golf Round',cardio:true,ck:'golf',
+       note:'Buggy only at your course · Apple Watch Ultra will track steps and activity\nFocus on hip rotation through the shot on every tee'},
+      {code:'B',name:'Driving Range / Practice',cardio:true,ck:'golf',
+       note:'Rotation work · Hip turn and shoulder follow-through\nLog separately if you also played a full round'}
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════
+let db={};
+try{db=JSON.parse(localStorage.getItem('uta_paul_v10')||'{}');}catch(e){db={};}
+if(!db.sessions)db.sessions={};
+if(!db.progLogs)db.progLogs={};
+SEED.forEach(s=>{if(!db.sessions[s.id])db.sessions[s.id]={date:s.date,label:s.label,type:s.type,exercises:s.exercises};});
+persist();
+
+function persist(){try{localStorage.setItem('uta_paul_v10',JSON.stringify(db));}catch(e){}}
+
+// ═══════════════════════════════════════════════════════════
+// DATA HELPERS
+// ═══════════════════════════════════════════════════════════
+function allExNames(){
+  const s=new Set();
+  Object.values(db.sessions).forEach(sess=>
+    Object.entries(sess.exercises).forEach(([n,sets])=>{
+      if(sets.some(x=>x.w&&parseFloat(x.w)>0&&!x.dist_km))s.add(n);
+    })
+  );
+  return[...s].sort();
+}
+
+function bestW(name){
+  let b=null,bd=null;
+  Object.values(db.sessions).forEach(s=>{
+    if(s.exercises[name])
+      s.exercises[name].filter(x=>!x.wu&&x.w&&!x.dist_km).forEach(x=>{
+        const k=parseFloat(x.w)||0;
+        if(k&&(!b||k>b)){b=k;bd=s.date;}
+      });
+  });
+  return{best:b,bestDate:bd};
+}
+
+function lastSets(name){
+  const all=Object.values(db.sessions)
+    .filter(s=>s.exercises[name])
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  if(!all.length)return null;
+  return{sets:all[0].exercises[name],date:all[0].date,label:all[0].label};
+}
+
+function exHist(name){
+  return Object.values(db.sessions)
+    .filter(s=>s.exercises[name])
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .map(s=>({
+      date:s.date,label:s.label,sets:s.exercises[name],
+      maxW:Math.max(0,...s.exercises[name].filter(x=>!x.wu&&x.w&&!x.dist_km).map(x=>parseFloat(x.w)||0))
+    }));
+}
+
+function sessVols(){
+  return Object.values(db.sessions)
+    .filter(s=>s.type==='gym')
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .map(s=>({
+      date:s.date,
+      vol:Object.values(s.exercises).flat()
+        .filter(x=>!x.wu&&x.w&&!x.dist_km)
+        .reduce((sum,x)=>sum+(parseFloat(x.r)||0)*(parseFloat(x.w)||0),0)
+    }))
+    .filter(s=>s.vol>0);
+}
+
+function sk(id,name){return(id+'__'+name).replace(/[^a-z0-9]/gi,'_');}
+
+function calcPace(km,mins){
+  if(!km||!mins)return'';
+  const p=mins/km,m=Math.floor(p),s=Math.round((p-m)*60);
+  return`${m}:${String(s).padStart(2,'0')} /km`;
+}
+function calcSpeed(km,mins){
+  if(!km||!mins)return'';
+  return(km/(mins/60)).toFixed(1)+' km/h';
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let openCards={},exTicks={},exDone={},exExtras={},selEx=null,openLogEx={};
+
+// ═══════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════
+function nav(p){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));
+  document.getElementById('panel-'+p).classList.add('on');
+  document.querySelectorAll('.nb')[['prog','log','charts','pbs','cal'].indexOf(p)].classList.add('on');
+  if(p==='prog')renderProg();
+  if(p==='log')renderLog();
+  if(p==='charts')renderCharts();
+  if(p==='pbs')renderPBs();
+  if(p==='cal')renderCal();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROGRAMME TAB
+// ═══════════════════════════════════════════════════════════
+function renderProg(){
+  const el=document.getElementById('panel-prog');
+  const gymC=Object.values(db.sessions).filter(s=>s.type==='gym').length;
+  const runC=Object.values(db.sessions).filter(s=>s.type==='run').length;
+  const vol=Math.round(sessVols().reduce((a,s)=>a+s.vol,0)/1000);
+
+  el.innerHTML=`
+    <div class="hero">
+      <div class="h-eye">Your programme</div>
+      <div class="h-title">Choose a session</div>
+      <div class="h-sub">Pick any session on any day — enter the date when you save it. All exercises pre-fill from your last time.</div>
+      <div class="h-stats">
+        <div class="hs"><div class="hs-n">${gymC}</div><div class="hs-l">gym sessions</div></div>
+        <div class="hs"><div class="hs-n">${runC}</div><div class="hs-l">runs logged</div></div>
+        <div class="hs"><div class="hs-n">${vol}k</div><div class="hs-l">kg lifted</div></div>
+      </div>
+    </div>
+    <div class="sh">Gym sessions</div>
+    ${PROG.filter(p=>p.type==='gym').map(progCard).join('')}
+    <div class="sh">Running</div>
+    ${PROG.filter(p=>p.type==='run').map(progCard).join('')}
+    <div class="sh">Walk &amp; run</div>
+    ${PROG.filter(p=>p.type==='walk').map(progCard).join('')}
+    <div class="sh">Golf</div>
+    ${PROG.filter(p=>p.type==='golf').map(progCard).join('')}
+  `;
+}
+
+function progCard(p){
+  const last=db.progLogs[p.id];
+  const tc={gym:'b-gym',run:'b-run',walk:'b-walk',golf:'b-golf'}[p.type]||'b-gym';
+  return`<div class="scard">
+    <div class="scard-hdr" onclick="togProg('${p.id}')">
+      <div class="sbadge ${tc}">${p.badge}</div>
+      <div class="s-meta">
+        <div class="s-name">${p.name}</div>
+        <div class="s-sub">${p.sub}</div>
+        ${last?`<div class="s-last">Last completed: ${fmtD(last.date)}</div>`:''}
+      </div>
+      <div class="schev" id="chev-${p.id}" style="${openCards[p.id]?'transform:rotate(90deg)':''}">›</div>
+    </div>
+    <div class="sbody${openCards[p.id]?' on':''}" id="sb-${p.id}">
+      ${openCards[p.id]?buildBody(p.id):''}
+    </div>
+  </div>`;
+}
+
+function togProg(pid){
+  openCards[pid]=!openCards[pid];
+  const b=document.getElementById('sb-'+pid);
+  const c=document.getElementById('chev-'+pid);
+  if(openCards[pid]){b.innerHTML=buildBody(pid);b.classList.add('on');c.style.transform='rotate(90deg)';}
+  else{b.classList.remove('on');c.style.transform='';}
+}
+
+function buildBody(pid){
+  const prog=PROG.find(p=>p.id===pid);
+  if(!prog)return'';
+  const lastLog=db.progLogs[pid];
+
+  let html=`<div class="date-row">
+    <label>Date completed:</label>
+    <input class="date-inp" type="date" id="date-${pid}" value="${todayISO()}" max="${todayISO()}">
+  </div>`;
+
+  prog.exercises.forEach(ex=>{
+    const lastSaved=lastLog&&lastLog.exercises&&lastLog.exercises[ex.name];
+    const prev=lastSets(ex.name);
+    const source=lastSaved||(prev?prev.sets:null);
+    const isPre=!lastSaved&&prev;
+    const isDone=exDone[pid+'_'+ex.name];
+
+    if(ex.cardio){
+      const isRW=ex.ck==='run'||ex.ck==='walk';
+      const isGolf=ex.ck==='golf';
+      const bc=ex.ck==='run'?'run-b':ex.ck==='walk'?'walk-b':ex.ck==='golf'?'golf-b':'wu-b';
+      const sd=lastSaved?lastSaved[0]:{};
+      html+=`<div class="cblk ${bc}${isDone?' done':''}" id="cb-${sk(pid,ex.name)}">
+        <div class="exb-top">
+          <span class="exb-code c">${ex.code}</span>
+          <span class="cblk-name">${ex.name}</span>
+          ${isDone?`<div class="done-dot" style="margin-left:auto">✓</div>`:''}
+        </div>
+        <div class="note">${ex.note.replace(/\n/g,'<br>')}</div>`;
+      if(isRW){
+        html+=`<div class="c-inputs">
+          <div class="ci-wrap"><div class="ci-lbl">Duration (mins)</div>
+            <input class="ci" type="number" min="0" step="1" id="cdur-${sk(pid,ex.name)}" placeholder="e.g. 30" value="${sd.r||''}" oninput="updPace('${pid}','${ex.name}')">
+          </div>
+          <div class="ci-wrap"><div class="ci-lbl">Distance (km)</div>
+            <input class="ci" type="number" min="0" step="0.01" id="cdist-${sk(pid,ex.name)}" placeholder="e.g. 5.00" value="${sd.dist_km||''}" oninput="updPace('${pid}','${ex.name}')">
+          </div>
+        </div>
+        <div class="c-calc" id="cpace-${sk(pid,ex.name)}">${sd.r&&sd.dist_km?calcPace(sd.dist_km,parseFloat(sd.r))+' · '+calcSpeed(sd.dist_km,parseFloat(sd.r)):''}</div>`;
+      } else if(isGolf){
+        html+=`<div class="c-inputs">
+          <div class="ci-wrap"><div class="ci-lbl">Holes played</div>
+            <input class="ci" type="number" min="1" max="18" id="cdur-${sk(pid,ex.name)}" placeholder="9 or 18" value="${sd.r||''}">
+          </div>
+          <div class="ci-wrap"><div class="ci-lbl">Score / notes</div>
+            <input class="ci" type="text" id="cdist-${sk(pid,ex.name)}" placeholder="e.g. shot 82" value="${sd.notes||''}">
+          </div>
+        </div>`;
+      } else {
+        html+=`<div class="c-inputs" style="grid-template-columns:1fr">
+          <div class="ci-wrap"><div class="ci-lbl">Notes</div>
+            <input class="ci" type="text" id="cdur-${sk(pid,ex.name)}" placeholder="done" value="${sd.r||''}">
+          </div>
+        </div>`;
+      }
+      html+=`<button class="c-done-btn" onclick="doneCardio('${pid}','${ex.name}')">Done ✓</button></div>`;
+      return;
+    }
+
+    // Strength exercise
+    // Pad pre-filled sets up to defaultSets if programme specifies more than history has
+    const isBW=ex.bw||false;
+    const defSets=ex.defaultSets||3;
+    let allS=source?[...source]:[];
+    if(allS.length<defSets){
+      const wuCount=allS.filter(s=>s.wu).length;
+      const workingCount=allS.filter(s=>!s.wu).length;
+      const workingNeeded=defSets-wuCount;
+      while(allS.filter(s=>!s.wu).length<workingNeeded){
+        allS.push({r:'',w:'',wu:false});
+      }
+    }
+    const extraCount=exExtras[pid+'_'+ex.name]||0;
+    for(let x=0;x<extraCount;x++) allS.push({r:'',w:'',wu:false});
+
+    const gridCols=isBW?'30px 1fr 1fr 30px':'30px 1fr 1fr 1fr';
+    html+=`<div class="exb${isDone?' done':''}" id="exb-${sk(pid,ex.name)}">
+      <div class="exb-top">
+        <span class="exb-code">${ex.code}</span>
+        <span class="exb-name">${ex.name}</span>
+        ${isDone?`<div class="done-dot">✓</div>`:''}
+      </div>
+      ${ex.ss?`<div class="ss-tag">⚡ ${ex.ss}</div>`:''}
+      <div class="note">${ex.note.replace(/\n/g,'<br>')}</div>
+      ${isPre?`<div class="tgt-bar">🎯 Pre-filled from ${fmtD(prev.date)} — try to match or beat</div>`:''}
+      <div class="shdr" style="grid-template-columns:${gridCols}"><span>Set</span><span>Target</span><span>Reps</span><span></span></div>`;
+
+    let si=0;
+    allS.forEach((s,i)=>{
+      const lbl=s.wu?'WU':`S${++si}`;
+      const tgt=s.w?`${s.r}@${s.w}`:s.r||'—';
+      const tid=`tk_${sk(pid,ex.name)}_${i}`;
+      const ticked=(exTicks[pid+'_'+ex.name]||{})[i];
+      if(isBW){
+        html+=`<div class="srow" id="sr-${tid}" style="grid-template-columns:${gridCols};align-items:center;">
+          <span class="slbl${s.wu?' wulbl':''}">${lbl}</span>
+          <span class="tgt${s.wu?' u':' g'}">${tgt}</span>
+          <input class="inp${isPre&&!s.wu?' pre':''}${s.wu?' wu':''}" type="number" min="0" placeholder="reps" id="ir-${tid}">
+          ${!s.wu?`<button class="tick${ticked?' on':''}" id="${tid}" onclick="doTick('${pid}','${ex.name}',${i},'${tid}')">✓</button>`:'<span></span>'}
+        </div>`;
+      } else {
+        html+=`<div class="srow" id="sr-${tid}">
+          <span class="slbl${s.wu?' wulbl':''}">${lbl}</span>
+          <span class="tgt${s.wu?' u':' g'}">${tgt}</span>
+          <input class="inp${isPre&&!s.wu?' pre':''}${s.wu?' wu':''}" type="number" min="0" placeholder="reps" id="ir-${tid}">
+          <div class="tw">
+            <input class="inp${isPre&&!s.wu?' pre':''}${s.wu?' wu':''}" type="number" min="0" step="0.5" placeholder="kg" id="iw-${tid}">
+            ${!s.wu?`<button class="tick${ticked?' on':''}" id="${tid}" onclick="doTick('${pid}','${ex.name}',${i},'${tid}')">✓</button>`:'<span></span>'}
+          </div>
+        </div>`;
+      }
+    });
+
+    html+=`<button class="add-set" data-pid="${pid}" data-exname="${ex.name.replace(/"/g,'&quot;')}" data-bw="${isBW}" data-idx="${allS.length}" onclick="addSetInline(this)">+ add set</button>
+      <button class="ex-done-btn" onclick="markDone('${pid}','${ex.name}')">Mark done ✓</button>
+    </div>`;
+  });
+
+  html+=`<button class="save-btn" onclick="saveProg('${pid}')">SAVE SESSION</button>`;
+  return html;
+}
+
+function updPace(pid,exName){
+  const k=sk(pid,exName);
+  const dur=parseFloat(document.getElementById('cdur-'+k)?.value)||0;
+  const dist=parseFloat(document.getElementById('cdist-'+k)?.value)||0;
+  const el=document.getElementById('cpace-'+k);
+  if(el)el.textContent=dur&&dist?calcPace(dist,dur)+' · '+calcSpeed(dist,dur):'';
+}
+
+function doneCardio(pid,exName){
+  exDone[pid+'_'+exName]=true;
+  document.getElementById('cb-'+sk(pid,exName))?.classList.add('done');
+  toast('Done!');
+}
+
+function doTick(pid,exName,idx,tid){
+  const k=pid+'_'+exName;
+  if(!exTicks[k])exTicks[k]={};
+  exTicks[k][idx]=!exTicks[k][idx];
+  document.getElementById(tid)?.classList.toggle('on',exTicks[k][idx]);
+  const prog=PROG.find(p=>p.id===pid);
+  const ex=prog?.exercises.find(e=>e.name===exName);
+  if(!ex)return;
+  const lastLog=db.progLogs[pid];
+  const src=(lastLog?.exercises?.[exName])||(lastSets(exName)?.sets)||Array(3).fill({wu:false});
+  const working=src.filter(s=>!s.wu).length;
+  if(Object.values(exTicks[k]).filter(Boolean).length>=working&&working>0){
+    exDone[k]=true;
+    document.getElementById('exb-'+sk(pid,exName))?.classList.add('done');
+    toast('Exercise done! 💪');
+  }
+}
+
+function markDone(pid,exName){
+  exDone[pid+'_'+exName]=true;
+  document.getElementById('exb-'+sk(pid,exName))?.classList.add('done');
+  toast('Exercise done! 💪');
+}
+
+function addSetInline(btn){
+  const pid=btn.dataset.pid;
+  const exName=btn.dataset.exname;
+  const isBW=btn.dataset.bw==='true';
+  const idx=parseInt(btn.dataset.idx);
+  const newIdx=btn.parentElement.querySelectorAll('[id^="sr-"]').length;
+  const tid=`tk_${sk(pid,exName)}_${newIdx}`;
+  const setNum=newIdx+1;
+  const gridCols=isBW?'30px 1fr 1fr 30px':'30px 1fr 1fr 1fr';
+  const row=document.createElement('div');
+  row.className='srow'; row.id='sr-'+tid;
+  row.style.gridTemplateColumns=gridCols;
+  row.style.alignItems='center';
+  if(isBW){
+    row.innerHTML=`<span class="slbl">S${setNum}</span><span class="tgt">—</span><input class="inp" type="number" min="0" placeholder="reps" id="ir-${tid}"><button class="tick" id="${tid}" onclick="doTick('${pid}','${exName.replace(/'/g,"\\'")}',${newIdx},'${tid}')">✓</button>`;
+  } else {
+    row.innerHTML=`<span class="slbl">S${setNum}</span><span class="tgt">—</span><input class="inp" type="number" min="0" placeholder="reps" id="ir-${tid}"><div class="tw"><input class="inp" type="number" min="0" step="0.5" placeholder="kg" id="iw-${tid}"><button class="tick" id="${tid}" onclick="doTick('${pid}','${exName.replace(/'/g,"\\'")}',${newIdx},'${tid}')">✓</button></div>`;
+  }
+  btn.parentNode.insertBefore(row, btn);
+  btn.dataset.idx=newIdx+1;
+  if(!exExtras[pid+'_'+exName])exExtras[pid+'_'+exName]=0;
+  exExtras[pid+'_'+exName]++;
+}
+
+function saveProg(pid){
+  const prog=PROG.find(p=>p.id===pid);
+  if(!prog)return;
+  const date=document.getElementById('date-'+pid)?.value||todayISO();
+  const exercises={};
+
+  prog.exercises.forEach(ex=>{
+    if(ex.cardio){
+      const k=sk(pid,ex.name);
+      const durEl=document.getElementById('cdur-'+k);
+      const distEl=document.getElementById('cdist-'+k);
+      const dur=durEl?durEl.value.trim():'';
+      const dist=distEl?distEl.value.trim():'';
+      const isRW=ex.ck==='run'||ex.ck==='walk';
+      const isGolf=ex.ck==='golf';
+      // Always save cardio if any value entered, or if it's golf (holes/notes)
+      if(dur||dist){
+        const entry={r:dur,w:'',wu:false};
+        if(isRW&&dist){entry.dist_km=parseFloat(dist);entry.pace=calcPace(parseFloat(dist),parseFloat(dur));}
+        if(isGolf&&dist)entry.notes=dist;
+        exercises[ex.name]=[entry];
+      }
+      return;
+    }
+    const lastLog2=db.progLogs[pid];
+    const src=(lastLog2?.exercises?.[ex.name])||(lastSets(ex.name)?.sets)||[];
+    const isBW2=ex.bw||false;
+    const defSets2=ex.defaultSets||3;
+    let baseSets=[...src];
+    if(baseSets.length<defSets2){
+      while(baseSets.filter(s=>!s.wu).length<defSets2-baseSets.filter(s=>s.wu).length)
+        baseSets.push({r:'',w:'',wu:false});
+    }
+    const extra2=exExtras[pid+'_'+ex.name]||0;
+    for(let x=0;x<extra2;x++) baseSets.push({r:'',w:'',wu:false});
+    const arr=[];
+    baseSets.forEach((s,i)=>{
+      const tid=`tk_${sk(pid,ex.name)}_${i}`;
+      const r=document.getElementById('ir-'+tid)?.value||'';
+      const w=isBW2?'':(document.getElementById('iw-'+tid)?.value||s.w||'');
+      if(r||w) arr.push({r:r||s.r||'',w,wu:s.wu||false});
+    });
+    if(arr.length) exercises[ex.name]=arr;
+  });
+
+  db.progLogs[pid]={date,exercises};
+  db.sessions['s_'+date.replace(/-/g,'')+'_'+pid]={date,label:prog.name,type:prog.type,exercises};
+  persist();
+  toast(`Saved — ${fmtD(date)} ✓`);
+  renderProg();
+  openCards[pid]=true;
+  setTimeout(()=>{
+    const b=document.getElementById('sb-'+pid);
+    if(b){b.innerHTML=buildBody(pid);b.classList.add('on');}
+  },80);
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOG TAB
+// ═══════════════════════════════════════════════════════════
+function renderLog(){
+  const el=document.getElementById('panel-log');
+  const names=allExNames();
+
+  // All non-gym sessions — runs, walks, golf
+  const cardioSess=Object.values(db.sessions)
+    .filter(s=>s.type==='run'||s.type==='walk'||s.type==='golf')
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  // Golf sessions as a flat list
+  const golfSess=cardioSess.filter(s=>s.type==='golf');
+  const otherCardio=cardioSess.filter(s=>s.type!=='golf');
+
+  let html='';
+
+  // ── GOLF LOG ──────────────────────────────────────────
+  if(golfSess.length){
+    html+=`<div class="sh">Golf rounds</div>`;
+    html+=`<div class="log-ex">
+      <div class="lex-hdr" onclick="togLog('golf_log')">
+        <div>
+          <div class="lex-name">Golf Rounds</div>
+          <div class="lex-meta">${golfSess.length} round${golfSess.length!==1?'s':''} logged</div>
+        </div>
+        <div style="font-size:20px;color:var(--border2);transition:transform .2s" id="lc-golf_log">›</div>
+      </div>
+      <div class="lex-rows${openLogEx['golf_log']?' on':''}" id="lr-golf_log">
+        ${golfSess.map(s=>{
+          const allEntries=Object.values(s.exercises).flat();
+          const holes=allEntries.find(x=>x.r)?.r||'';
+          const notes=allEntries.find(x=>x.notes)?.notes||'';
+          return`<div class="lex-row">
+            <div>
+              <div class="lex-date">${fmtD(s.date)}</div>
+              <div class="lex-sess">${s.label}</div>
+            </div>
+            <div class="lex-sets">
+              ${holes?holes+' holes':''}
+              ${notes?`<div class="lex-pb">${notes}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ── RUNS & WALKS ──────────────────────────────────────
+  if(otherCardio.length){
+    html+=`<div class="sh">Runs &amp; walks</div>`;
+    // Group by exercise name across all sessions
+    const grouped={};
+    otherCardio.forEach(s=>
+      Object.entries(s.exercises).forEach(([name,sets])=>{
+        if(!grouped[name])grouped[name]=[];
+        sets.forEach(x=>{
+          if(x.r||x.dist_km)
+            grouped[name].push({date:s.date,label:s.label,type:s.type,dur:x.r,dist:x.dist_km,pace:x.pace});
+        });
+      })
+    );
+    Object.entries(grouped).sort().forEach(([name,entries])=>{
+      const key=name.replace(/[^a-z0-9]/gi,'_');
+      const typeCol=entries[0]?.type==='run'?'var(--blue)':'var(--amber)';
+      html+=`<div class="log-ex">
+        <div class="lex-hdr" onclick="togLog('${key}')">
+          <div>
+            <div class="lex-name">${name}</div>
+            <div class="lex-meta">${entries.length} session${entries.length!==1?'s':''}</div>
+          </div>
+          <div style="font-size:20px;color:var(--border2);transition:transform .2s" id="lc-${key}">›</div>
+        </div>
+        <div class="lex-rows${openLogEx[key]?' on':''}" id="lr-${key}">
+          ${entries.map(e=>`<div class="lex-row">
+            <div>
+              <div class="lex-date">${fmtD(e.date)}</div>
+              <div class="lex-sess">${e.label}</div>
+            </div>
+            <div class="lex-sets">
+              ${e.dur?e.dur+' mins':''}${e.dist?`<br>${e.dist} km`:''}
+              ${e.pace?`<div class="lex-pb">${e.pace}</div>`:''}
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    });
+  }
+
+  if(names.length){
+    html+=`<div class="sh">Strength history</div>`;
+    html+=names.map(name=>{
+      const hist=exHist(name);
+      const{best}=bestW(name);
+      const key=name.replace(/[^a-z0-9]/gi,'_');
+      return`<div class="log-ex">
+        <div class="lex-hdr" onclick="togLog('${key}')">
+          <div>
+            <div class="lex-name">${name}</div>
+            <div class="lex-meta">${hist.length} session${hist.length!==1?'s':''} · PB: ${best?best+'kg':'bodyweight'}</div>
+          </div>
+          <div style="font-size:20px;color:var(--border2);transition:transform .2s" id="lc-${key}">›</div>
+        </div>
+        <div class="lex-rows${openLogEx[key]?' on':''}" id="lr-${key}">
+          ${[...hist].reverse().map(h=>{
+            const working=h.sets.filter(s=>!s.wu);
+            const detail=working.map((s,i)=>s.w?`S${i+1}: ${s.r} reps @ ${s.w}kg`:s.r||'—').join('<br>');
+            return`<div class="lex-row">
+              <div>
+                <div class="lex-date">${fmtD(h.date)}</div>
+                <div class="lex-sess">${h.label}</div>
+              </div>
+              <div class="lex-sets">
+                ${detail}
+                ${h.maxW?`<div class="lex-pb">↑ ${h.maxW}kg</div>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if(!html)html='<div class="no-data" style="margin-top:40px">No sessions logged yet</div>';
+  el.innerHTML=html;
+}
+
+function togLog(key){
+  openLogEx[key]=!openLogEx[key];
+  document.getElementById('lr-'+key)?.classList.toggle('on',openLogEx[key]);
+  const c=document.getElementById('lc-'+key);
+  if(c)c.style.transform=openLogEx[key]?'rotate(90deg)':'';
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHARTS TAB
+// ═══════════════════════════════════════════════════════════
+function renderCharts(){
+  const el=document.getElementById('panel-charts');
+  const names=allExNames();
+  if(!selEx||!names.includes(selEx))selEx=names[0];
+  const vols=sessVols();
+  const maxV=Math.max(...vols.map(s=>s.vol),1);
+  const recent=vols.slice(-10);
+
+  const runSess=Object.values(db.sessions)
+    .filter(s=>s.type==='run')
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .slice(-10);
+  const runD=runSess.map(s=>{
+    let d=0;
+    Object.values(s.exercises).flat().forEach(x=>{if(x.dist_km)d+=x.dist_km;});
+    return{date:s.date,dist:d};
+  }).filter(s=>s.dist>0);
+  const maxD=Math.max(...runD.map(s=>s.dist),1);
+
+  el.innerHTML=`
+    <div class="sh">Gym volume</div>
+    <div class="ccrd">
+      <div class="ct">Volume per gym session</div>
+      <div class="cs">Sets × reps × kg — all exercises combined</div>
+      ${recent.length>=2?`
+        <div class="vbars">
+          ${recent.map((s,i)=>`<div class="vbar${i===recent.length-1?' last':''}" style="height:${Math.max(4,Math.round(s.vol/maxV*76))}px"></div>`).join('')}
+        </div>
+        <div class="vlbls">
+          ${recent.map(s=>`<div class="vlbl">${fmtD(s.date).slice(0,5)}</div>`).join('')}
+        </div>`
+      :`<div class="no-data">Log more sessions to see trends</div>`}
+    </div>
+
+    ${runD.length>=2?`
+    <div class="sh">Running distance</div>
+    <div class="ccrd">
+      <div class="ct">Distance per run session</div>
+      <div class="cs">kilometres</div>
+      <div class="vbars">
+        ${runD.map((s,i)=>`<div class="vbar${i===runD.length-1?' last':''}" style="height:${Math.max(4,Math.round(s.dist/maxD*76))}px;background:var(--blue);opacity:${i===runD.length-1?1:.35}"></div>`).join('')}
+      </div>
+      <div class="vlbls">
+        ${runD.map(s=>`<div class="vlbl">${fmtD(s.date).slice(0,5)}</div>`).join('')}
+      </div>
+    </div>`:''}
+
+    <div class="sh">Weight progression by exercise</div>
+    <div class="echips">
+      ${names.map(n=>`<button class="echip${n===selEx?' on':''}" onclick="pickEx(this,'${n.replace(/'/g,"\\'")}')"> ${n}</button>`).join('')}
+    </div>
+    <div class="ccrd" id="exChart">${buildExChart(selEx)}</div>
+  `;
+}
+
+function pickEx(btn,name){
+  selEx=name;
+  document.querySelectorAll('.echip').forEach(c=>c.classList.toggle('on',c.textContent.trim()===name));
+  document.getElementById('exChart').innerHTML=buildExChart(name);
+}
+
+function buildExChart(name){
+  const hist=exHist(name).filter(h=>h.maxW>0);
+  if(hist.length<2)return`<div class="ct">${name}</div><div class="no-data">Need 2 or more sessions with weight to chart</div>`;
+  const maxW=Math.max(...hist.map(h=>h.maxW));
+  const minW=Math.min(...hist.map(h=>h.maxW));
+  const range=maxW-minW||1;
+  const W=310,H=110,pad=22;
+  const cx=i=>pad+(i/(hist.length-1))*(W-pad*2);
+  const cy=v=>H-pad-((v-minW)/range)*(H-pad*2);
+  const path=hist.map((p,i)=>`${i===0?'M':'L'}${cx(i).toFixed(1)},${cy(p.maxW).toFixed(1)}`).join(' ');
+  const area=`${path} L${cx(hist.length-1).toFixed(1)},${H} L${cx(0).toFixed(1)},${H} Z`;
+  const delta=hist[hist.length-1].maxW-hist[0].maxW;
+  return`
+    <div class="ct">${name}</div>
+    <div class="cs">${minW}kg → ${maxW}kg · ${delta>=0?'+':''}${delta}kg since ${fmtD(hist[0].date)}</div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:110px;overflow:visible;display:block;margin-top:8px">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1e6e42" stop-opacity=".2"/>
+          <stop offset="100%" stop-color="#1e6e42" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#g)"/>
+      <path d="${path}" fill="none" stroke="#1e6e42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${hist.map((p,i)=>`
+        <circle cx="${cx(i).toFixed(1)}" cy="${cy(p.maxW).toFixed(1)}" r="3.5" fill="#1e6e42"/>
+        <text x="${cx(i).toFixed(1)}" y="${(cy(p.maxW)-8).toFixed(1)}" font-family="DM Mono" font-size="9" fill="#1e6e42" text-anchor="middle">${p.maxW}kg</text>
+        <text x="${cx(i).toFixed(1)}" y="${H-4}" font-family="DM Mono" font-size="8" fill="#8c8880" text-anchor="middle">${fmtD(p.date).slice(0,5)}</text>
+      `).join('')}
+    </svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PBs TAB
+// ═══════════════════════════════════════════════════════════
+function renderPBs(){
+  const el=document.getElementById('panel-pbs');
+  const names=allExNames();
+  const pbs=names.map(n=>({name:n,...bestW(n)})).filter(p=>p.best).sort((a,b)=>b.best-a.best);
+  const improved=names.map(name=>{
+    const h=exHist(name).filter(x=>x.maxW>0);
+    if(h.length<2)return null;
+    const f=h[0].maxW,l=h[h.length-1].maxW,pct=Math.round((l-f)/f*100);
+    return pct>0?{name,from:f,to:l,pct}:null;
+  }).filter(Boolean).sort((a,b)=>b.pct-a.pct).slice(0,8);
+
+  const runPBs={};
+  Object.values(db.sessions).filter(s=>s.type==='run').forEach(s=>
+    Object.entries(s.exercises).forEach(([name,sets])=>
+      sets.forEach(x=>{
+        if(x.dist_km&&(!runPBs[name]||x.dist_km>runPBs[name].dist))
+          runPBs[name]={dist:x.dist_km,pace:x.pace,date:s.date};
+      })
+    )
+  );
+
+  el.innerHTML=`
+    <div class="sh">Strength personal bests — heaviest working set</div>
+    ${pbs.length?pbs.map(p=>`
+      <div class="pb">
+        <div>
+          <div class="pb-name">${p.name}</div>
+          <div class="pb-sub">${fmtD(p.bestDate)}</div>
+        </div>
+        <div class="pb-val">${p.best}kg</div>
+      </div>`).join(''):`<div class="no-data">Log gym sessions to see personal bests</div>`}
+
+    ${Object.keys(runPBs).length?`
+      <div class="sh" style="margin-top:20px">Running bests</div>
+      ${Object.entries(runPBs).map(([name,pb])=>`
+        <div class="pb">
+          <div>
+            <div class="pb-name">${name}</div>
+            <div class="pb-sub">${fmtD(pb.date)}${pb.pace?' · '+pb.pace:''}</div>
+          </div>
+          <div class="pb-val" style="color:var(--blue)">${pb.dist}km</div>
+        </div>`).join('')}`:''}
+
+    ${improved.length?`
+      <div class="sh" style="margin-top:20px">Most improved since December 2025</div>
+      ${improved.map(p=>`
+        <div class="pb">
+          <div>
+            <div class="pb-name">${p.name}</div>
+            <div class="pb-sub">${p.from}kg → ${p.to}kg</div>
+          </div>
+          <div class="imp-val">+${p.pct}%</div>
+        </div>`).join('')}`:''}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CALENDAR TAB
+// ═══════════════════════════════════════════════════════════
+let calYr=new Date().getFullYear(), calMo=new Date().getMonth();
+
+function calPrev(){
+  calMo--;
+  if(calMo<0){calMo=11;calYr--;}
+  renderCal();
+}
+function calNext(){
+  const now=new Date();
+  if(calYr>now.getFullYear()||(calYr===now.getFullYear()&&calMo>=now.getMonth()))return;
+  calMo++;
+  if(calMo>11){calMo=0;calYr++;}
+  renderCal();
+}
+
+function renderCal(){
+  const el=document.getElementById('panel-cal');
+  const now=new Date();
+  const yr=calYr, mo=calMo;
+  const isCurrentMonth=(yr===now.getFullYear()&&mo===now.getMonth());
+  const firstDow=new Date(yr,mo,1).getDay();
+  const firstOffset=(firstDow===0)?6:firstDow-1;
+  const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const moStr=`${yr}-${String(mo+1).padStart(2,'0')}`;
+
+  // Sessions in this month
+  const gymD=new Set(),runD=new Set(),walkD=new Set(),golfD=new Set();
+  const moSessions=[];
+  Object.values(db.sessions).forEach(s=>{
+    if(s.date.slice(0,7)===moStr){
+      const d=parseInt(s.date.slice(8));
+      if(s.type==='gym')gymD.add(d);
+      else if(s.type==='run')runD.add(d);
+      else if(s.type==='walk')walkD.add(d);
+      else if(s.type==='golf')golfD.add(d);
+      moSessions.push(s);
+    }
+  });
+
+  // Monthly stats
+  const moGym=gymD.size, moRun=runD.size, moWalk=walkD.size, moGolf=golfD.size;
+  const moActive=new Set([...gymD,...runD,...walkD,...golfD]).size;
+  const moVol=Math.round(moSessions.filter(s=>s.type==='gym')
+    .reduce((sum,s)=>sum+Object.values(s.exercises).flat()
+      .filter(x=>!x.wu&&x.w&&!x.dist_km)
+      .reduce((sv,x)=>sv+(parseFloat(x.r)||0)*(parseFloat(x.w)||0),0),0)/1000*10)/10;
+
+  // All-time totals
+  const gymT=Object.values(db.sessions).filter(s=>s.type==='gym').length;
+  const runT=Object.values(db.sessions).filter(s=>s.type==='run').length;
+  const vol=Math.round(sessVols().reduce((a,s)=>a+s.vol,0)/1000);
+  const tc={gym:'b-gym',run:'b-run',walk:'b-walk',golf:'b-golf'};
+
+  // Monthly summary across all logged months
+  const allMonths={};
+  Object.values(db.sessions).forEach(s=>{
+    const mk=s.date.slice(0,7);
+    if(!allMonths[mk])allMonths[mk]={gym:0,run:0,walk:0,golf:0,active:new Set()};
+    allMonths[mk][s.type]=(allMonths[mk][s.type]||0)+1;
+    allMonths[mk].active.add(s.date);
+  });
+  const sortedMonths=Object.keys(allMonths).sort().reverse();
+
+  el.innerHTML=`
+    <div class="sg">
+      <div class="sb"><div class="sbn">${gymT}</div><div class="sbl">gym sessions total</div></div>
+      <div class="sb"><div class="sbn">${runT}</div><div class="sbl">runs total</div></div>
+      <div class="sb"><div class="sbn">${vol}k</div><div class="sbl">kg lifted total</div></div>
+      <div class="sb"><div class="sbn">${gymT+runT}</div><div class="sbl">all sessions</div></div>
+    </div>
+
+    <div class="sh">Monthly calendar</div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <button onclick="calPrev()" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--card);font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;">‹</button>
+      <div style="text-align:center;">
+        <div style="font-family:var(--disp);font-size:20px;letter-spacing:.06em;color:var(--text)">${MONTHS[mo].toUpperCase()} ${yr}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px">${moActive} active day${moActive!==1?'s':''} · ${moGym} gym · ${moRun} run${moRun!==1?'s':''} · ${moWalk} walk${moWalk!==1?'s':''}</div>
+      </div>
+      <button onclick="calNext()" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--card);font-size:18px;cursor:pointer;color:${isCurrentMonth?'var(--border2)':'var(--text)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;" ${isCurrentMonth?'disabled':''}>›</button>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px;">
+      <div class="cal-grid">
+        ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="cdh">${d}</div>`).join('')}
+        ${Array(firstOffset).fill(0).map(()=>'<div class="cc empty"></div>').join('')}
+        ${Array.from({length:daysInMonth},(_,i)=>{
+          const d=i+1;
+          const isToday=isCurrentMonth&&d===now.getDate();
+          let cls='cc';
+          if(gymD.has(d))cls+=' gym';
+          else if(runD.has(d))cls+=' run';
+          else if(walkD.has(d))cls+=' walk';
+          else if(golfD.has(d))cls+=' golf';
+          if(isToday)cls+=' today';
+          return`<div class="${cls}">${d}</div>`;
+        }).join('')}
+      </div>
+      <div class="cleg" style="margin-top:10px">
+        <div class="cli"><div class="cld" style="background:var(--text)"></div>Gym</div>
+        <div class="cli"><div class="cld" style="background:var(--blue)"></div>Run</div>
+        <div class="cli"><div class="cld" style="background:var(--amber)"></div>Walk</div>
+        <div class="cli"><div class="cld" style="background:#2a6e1a"></div>Golf</div>
+      </div>
+    </div>
+
+    ${moVol>0?`<div style="background:var(--gbg);border:1px solid var(--gbdr);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--green);">
+      ${MONTHS[mo]}: ${moGym} gym session${moGym!==1?'s':''} · ${moVol}k kg lifted${moRun>0?' · '+moRun+' run'+( moRun!==1?'s':''):''}${moWalk>0?' · '+moWalk+' walk'+(moWalk!==1?'s':''):''}
+    </div>`:''}
+
+    <div class="sh">Month-by-month summary</div>
+    ${sortedMonths.map(mk=>{
+      const m=allMonths[mk];
+      const [mYr,mMo]=mk.split('-');
+      const mName=MONTHS[parseInt(mMo)-1];
+      const activeDays=m.active.size;
+      const maxDays=new Date(parseInt(mYr),parseInt(mMo),0).getDate();
+      const pct=Math.round(activeDays/maxDays*100);
+      const isThisMonth=mk===`${yr}-${String(mo+1).padStart(2,'0')}`;
+      return`<div style="background:${isThisMonth?'var(--gbg)':'var(--card)'};border:1px solid ${isThisMonth?'var(--gbdr)':'var(--border)'};border-radius:10px;padding:10px 14px;margin-bottom:6px;cursor:pointer;" onclick="calYr=${mYr};calMo=${parseInt(mMo)-1};renderCal()">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${mName} ${mYr}</div>
+          <div style="font-family:var(--mono);font-size:12px;color:${isThisMonth?'var(--green)':'var(--muted)'};">${activeDays} day${activeDays!==1?'s':''} active</div>
+        </div>
+        <div style="height:5px;background:var(--card2);border-radius:3px;margin-bottom:6px;overflow:hidden;">
+          <div style="height:5px;border-radius:3px;background:${isThisMonth?'var(--green)':'var(--border2)'};width:${pct}%;transition:width .4s;"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${m.gym?`<span style="font-family:var(--mono);font-size:10px;background:var(--text);color:#c8f060;padding:2px 7px;border-radius:4px;">${m.gym} gym</span>`:''}
+          ${m.run?`<span style="font-family:var(--mono);font-size:10px;background:var(--bbg);color:var(--blue);padding:2px 7px;border-radius:4px;">${m.run} run</span>`:''}
+          ${m.walk?`<span style="font-family:var(--mono);font-size:10px;background:var(--abg);color:var(--amber);padding:2px 7px;border-radius:4px;">${m.walk} walk</span>`:''}
+          ${m.golf?`<span style="font-family:var(--mono);font-size:10px;background:#f0f8ec;color:#2a6e1a;padding:2px 7px;border-radius:4px;">${m.golf} golf</span>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+
+    <div class="sh" style="margin-top:4px">Sessions in ${MONTHS[mo]} ${yr}</div>
+    ${moSessions.length===0
+      ? `<div class="no-data" style="padding:20px 0">No sessions logged in ${MONTHS[mo]} ${yr}</div>`
+      : moSessions.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>`<div class="sh-item">
+        <div>
+          <div class="shi-l">${s.label}</div>
+          <div class="shi-d">${fmtD(s.date)}</div>
+        </div>
+        <div class="sbadge ${tc[s.type]||'b-gym'}" style="font-size:10px;padding:3px 8px">${s.type.toUpperCase()}</div>
+      </div>`).join('')}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT / IMPORT — for cross-device use via OneDrive
+// ═══════════════════════════════════════════════════════════
+function exportData(){
+  const data={sessions:db.sessions,progLogs:db.progLogs,exportDate:todayISO()};
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`uta-tracker-backup-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Data exported — save to OneDrive ✓');
+}
+
+function importData(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.sessions){
+        // Merge — imported data wins for any conflicting keys
+        Object.assign(db.sessions,data.sessions);
+        if(data.progLogs)Object.assign(db.progLogs,data.progLogs);
+        persist();
+        toast('Data imported successfully ✓');
+        renderProg();
+      } else {
+        toast('Invalid file — please use a UTA export');
+      }
+    }catch(err){
+      toast('Could not read file');
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.getElementById('todayLbl').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+renderProg();
+</script>
+</body>
+</html>
